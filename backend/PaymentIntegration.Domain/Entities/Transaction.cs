@@ -30,7 +30,7 @@ public class Transaction
 
     public string? RespDesc { get; set; }
 
-    public DateTime CreatedAt { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     public DateTime? PaidAt { get; set; }
 

@@ -10,7 +10,7 @@ public class CustomerCard
 
     public string MaskedCardNo { get; set; } = string.Empty;
 
-    public DateTime CreatedAt { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     public Customer? Customer { get; set; }
 }
