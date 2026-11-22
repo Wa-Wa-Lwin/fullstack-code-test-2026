@@ -1,0 +1,15 @@
+C:\Users\Wa Wa Lwin\AppData\Local\Temp\pi-build-check\PaymentIntegration.Domain.deps.json
+C:\Users\Wa Wa Lwin\AppData\Local\Temp\pi-build-check\PaymentIntegration.Domain.dll
+C:\Users\Wa Wa Lwin\AppData\Local\Temp\pi-build-check\PaymentIntegration.Domain.pdb
+C:\Job Application\payment-integration-assessment\backend\PaymentIntegration.Domain\obj\Debug\net10.0\PaymentIntegration.Domain.GeneratedMSBuildEditorConfig.editorconfig
+C:\Job Application\payment-integration-assessment\backend\PaymentIntegration.Domain\obj\Debug\net10.0\PaymentIntegration.Domain.AssemblyInfoInputs.cache
+C:\Job Application\payment-integration-assessment\backend\PaymentIntegration.Domain\obj\Debug\net10.0\PaymentIntegration.Domain.AssemblyInfo.cs
+C:\Job Application\payment-integration-assessment\backend\PaymentIntegration.Domain\obj\Debug\net10.0\PaymentIntegration.Domain.csproj.CoreCompileInputs.cache
+C:\Job Application\payment-integration-assessment\backend\PaymentIntegration.Domain\obj\Debug\net10.0\PaymentIntegration.Domain.sourcelink.json
+C:\Job Application\payment-integration-assessment\backend\PaymentIntegration.Domain\obj\Debug\net10.0\PaymentIntegration.Domain.dll
+C:\Job Application\payment-integration-assessment\backend\PaymentIntegration.Domain\obj\Debug\net10.0\refint\PaymentIntegration.Domain.dll
+C:\Job Application\payment-integration-assessment\backend\PaymentIntegration.Domain\obj\Debug\net10.0\PaymentIntegration.Domain.pdb
+C:\Job Application\payment-integration-assessment\backend\PaymentIntegration.Domain\obj\Debug\net10.0\ref\PaymentIntegration.Domain.dll
+C:\Job Application\payment-integration-assessment\backend\PaymentIntegration.Domain\bin\Debug\net10.0\PaymentIntegration.Domain.deps.json
+C:\Job Application\payment-integration-assessment\backend\PaymentIntegration.Domain\bin\Debug\net10.0\PaymentIntegration.Domain.dll
+C:\Job Application\payment-integration-assessment\backend\PaymentIntegration.Domain\bin\Debug\net10.0\PaymentIntegration.Domain.pdb

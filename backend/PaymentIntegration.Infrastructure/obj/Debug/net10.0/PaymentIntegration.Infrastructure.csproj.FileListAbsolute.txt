@@ -1,0 +1,21 @@
+C:\Users\Wa Wa Lwin\AppData\Local\Temp\pi-build-check\PaymentIntegration.Infrastructure.deps.json
+C:\Users\Wa Wa Lwin\AppData\Local\Temp\pi-build-check\PaymentIntegration.Infrastructure.dll
+C:\Users\Wa Wa Lwin\AppData\Local\Temp\pi-build-check\PaymentIntegration.Infrastructure.pdb
+C:\Job Application\payment-integration-assessment\backend\PaymentIntegration.Infrastructure\obj\Debug\net10.0\PaymentIntegration.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
+C:\Job Application\payment-integration-assessment\backend\PaymentIntegration.Infrastructure\obj\Debug\net10.0\PaymentIntegration.Infrastructure.AssemblyInfoInputs.cache
+C:\Job Application\payment-integration-assessment\backend\PaymentIntegration.Infrastructure\obj\Debug\net10.0\PaymentIntegration.Infrastructure.AssemblyInfo.cs
+C:\Job Application\payment-integration-assessment\backend\PaymentIntegration.Infrastructure\obj\Debug\net10.0\PaymentIntegration.Infrastructure.csproj.CoreCompileInputs.cache
+C:\Job Application\payment-integration-assessment\backend\PaymentIntegration.Infrastructure\obj\Debug\net10.0\PaymentIntegration.Infrastructure.sourcelink.json
+C:\Job Application\payment-integration-assessment\backend\PaymentIntegration.Infrastructure\obj\Debug\net10.0\PaymentIntegration.Infrastructure.dll
+C:\Job Application\payment-integration-assessment\backend\PaymentIntegration.Infrastructure\obj\Debug\net10.0\refint\PaymentIntegration.Infrastructure.dll
+C:\Job Application\payment-integration-assessment\backend\PaymentIntegration.Infrastructure\obj\Debug\net10.0\PaymentIntegration.Infrastructure.pdb
+C:\Job Application\payment-integration-assessment\backend\PaymentIntegration.Infrastructure\obj\Debug\net10.0\ref\PaymentIntegration.Infrastructure.dll
+C:\Job Application\payment-integration-assessment\backend\PaymentIntegration.Infrastructure\bin\Debug\net10.0\PaymentIntegration.Infrastructure.deps.json
+C:\Job Application\payment-integration-assessment\backend\PaymentIntegration.Infrastructure\bin\Debug\net10.0\PaymentIntegration.Infrastructure.dll
+C:\Job Application\payment-integration-assessment\backend\PaymentIntegration.Infrastructure\bin\Debug\net10.0\PaymentIntegration.Infrastructure.pdb
+C:\Job Application\payment-integration-assessment\backend\PaymentIntegration.Infrastructure\bin\Debug\net10.0\PaymentIntegration.Application.dll
+C:\Job Application\payment-integration-assessment\backend\PaymentIntegration.Infrastructure\bin\Debug\net10.0\PaymentIntegration.Domain.dll
+C:\Job Application\payment-integration-assessment\backend\PaymentIntegration.Infrastructure\bin\Debug\net10.0\PaymentIntegration.Application.pdb
+C:\Job Application\payment-integration-assessment\backend\PaymentIntegration.Infrastructure\bin\Debug\net10.0\PaymentIntegration.Domain.pdb
+C:\Job Application\payment-integration-assessment\backend\PaymentIntegration.Infrastructure\obj\Debug\net10.0\PaymentIntegration.Infrastructure.csproj.AssemblyReference.cache
+C:\Job Application\payment-integration-assessment\backend\PaymentIntegration.Infrastructure\obj\Debug\net10.0\PaymentI.D338A7FF.Up2Date

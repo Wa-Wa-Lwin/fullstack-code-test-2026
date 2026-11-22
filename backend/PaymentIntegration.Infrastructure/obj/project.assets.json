@@ -1,11 +1,49 @@
 {
   "version": 4,
   "targets": {
-    "net10.0": {}
+    "net10.0": {
+      "PaymentIntegration.Application/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "dependencies": {
+          "PaymentIntegration.Domain": "1.0.0"
+        },
+        "compile": {
+          "bin/placeholder/PaymentIntegration.Application.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/PaymentIntegration.Application.dll": {}
+        }
+      },
+      "PaymentIntegration.Domain/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "compile": {
+          "bin/placeholder/PaymentIntegration.Domain.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/PaymentIntegration.Domain.dll": {}
+        }
+      }
+    }
   },
-  "libraries": {},
+  "libraries": {
+    "PaymentIntegration.Application/1.0.0": {
+      "type": "project",
+      "path": "../PaymentIntegration.Application/PaymentIntegration.Application.csproj",
+      "msbuildProject": "../PaymentIntegration.Application/PaymentIntegration.Application.csproj"
+    },
+    "PaymentIntegration.Domain/1.0.0": {
+      "type": "project",
+      "path": "../PaymentIntegration.Domain/PaymentIntegration.Domain.csproj",
+      "msbuildProject": "../PaymentIntegration.Domain/PaymentIntegration.Domain.csproj"
+    }
+  },
   "projectFileDependencyGroups": {
-    "net10.0": []
+    "net10.0": [
+      "PaymentIntegration.Application >= 1.0.0",
+      "PaymentIntegration.Domain >= 1.0.0"
+    ]
   },
   "packageFolders": {
     "C:\\Users\\Wa Wa Lwin\\.nuget\\packages\\": {}
@@ -13,11 +51,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Job Application\\payment-integration-assessment\\backend\\backend\\PaymentIntegration.Infrastructure\\PaymentIntegration.Infrastructure.csproj",
+      "projectUniqueName": "C:\\Job Application\\payment-integration-assessment\\backend\\PaymentIntegration.Infrastructure\\PaymentIntegration.Infrastructure.csproj",
       "projectName": "PaymentIntegration.Infrastructure",
-      "projectPath": "C:\\Job Application\\payment-integration-assessment\\backend\\backend\\PaymentIntegration.Infrastructure\\PaymentIntegration.Infrastructure.csproj",
+      "projectPath": "C:\\Job Application\\payment-integration-assessment\\backend\\PaymentIntegration.Infrastructure\\PaymentIntegration.Infrastructure.csproj",
       "packagesPath": "C:\\Users\\Wa Wa Lwin\\.nuget\\packages\\",
-      "outputPath": "C:\\Job Application\\payment-integration-assessment\\backend\\backend\\PaymentIntegration.Infrastructure\\obj\\",
+      "outputPath": "C:\\Job Application\\payment-integration-assessment\\backend\\PaymentIntegration.Infrastructure\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\Wa Wa Lwin\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -32,7 +70,14 @@
         "net10.0": {
           "framework": "net10.0",
           "targetAlias": "net10.0",
-          "projectReferences": {}
+          "projectReferences": {
+            "C:\\Job Application\\payment-integration-assessment\\backend\\PaymentIntegration.Application\\PaymentIntegration.Application.csproj": {
+              "projectPath": "C:\\Job Application\\payment-integration-assessment\\backend\\PaymentIntegration.Application\\PaymentIntegration.Application.csproj"
+            },
+            "C:\\Job Application\\payment-integration-assessment\\backend\\PaymentIntegration.Domain\\PaymentIntegration.Domain.csproj": {
+              "projectPath": "C:\\Job Application\\payment-integration-assessment\\backend\\PaymentIntegration.Domain\\PaymentIntegration.Domain.csproj"
+            }
+          }
         }
       },
       "warningProperties": {
