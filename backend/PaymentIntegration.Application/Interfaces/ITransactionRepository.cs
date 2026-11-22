@@ -4,7 +4,7 @@ namespace PaymentIntegration.Application.Interfaces;
 
 public interface ITransactionRepository
 {
-    Task<Transaction?> GetByIdAsync(long id);
+    Task<Transaction?> GetByIdAsync(int id);
 
     Task<Transaction?> GetByIdempotencyKeyAsync(string idempotencyKey);
 
