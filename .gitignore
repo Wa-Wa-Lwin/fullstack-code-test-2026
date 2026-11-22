@@ -1,0 +1,67 @@
+# ---------- .NET ----------
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Ll]og/
+[Ll]ogs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.rsuser
+project.lock.json
+*.nupkg
+*.snupkg
+TestResults/
+coverage/
+*.coverage
+*.coveragexml
+coverage*.json
+coverage*.xml
+
+# ---------- IDEs ----------
+.vs/
+.idea/
+*.sln.iml
+.vscode/*
+!.vscode/settings.json
+!.vscode/launch.json
+!.vscode/tasks.json
+!.vscode/extensions.json
+
+# ---------- Frontend (Node) ----------
+node_modules/
+dist/
+build/
+.next/
+.nuxt/
+.angular/
+.cache/
+.turbo/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ---------- Secrets / local config ----------
+.env
+.env.*
+!.env.example
+appsettings.*.local.json
+*.pfx
+*.pem
+secrets.json
+
+# ---------- Docker ----------
+docker-compose.override.yml
+
+# ---------- OS ----------
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# ---------- Claude Code (local settings) ----------
+.claude/settings.local.json
