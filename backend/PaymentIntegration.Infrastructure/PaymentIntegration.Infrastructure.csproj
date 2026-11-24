@@ -17,6 +17,11 @@
     <PackageReference Include="StackExchange.Redis" Version="3.4.35" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- The 2C2P JWT helper and wire messages are internal; the tests exercise them directly. -->
+    <InternalsVisibleTo Include="PaymentIntegration.Tests" />
+  </ItemGroup>
+
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>

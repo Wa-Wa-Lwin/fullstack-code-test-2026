@@ -3,4 +3,5 @@
   <Project Path="PaymentIntegration.Application/PaymentIntegration.Application.csproj" />
   <Project Path="PaymentIntegration.Domain/PaymentIntegration.Domain.csproj" />
   <Project Path="PaymentIntegration.Infrastructure/PaymentIntegration.Infrastructure.csproj" />
+  <Project Path="PaymentIntegration.Tests/PaymentIntegration.Tests.csproj" />
 </Solution>
