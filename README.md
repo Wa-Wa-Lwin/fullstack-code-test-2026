@@ -66,7 +66,7 @@ The integration tests start their own MySQL and Redis containers with Testcontai
 
 - **Unit:** JWT signing and verification (a tampered or wrongly signed payload is rejected) and the gateway's mapping of 2C2P requests, responses and codes.
 - **Idempotency:** concurrent checkouts with one key create one transaction and one gateway call, with and without the Redis lock; a repeat after completion returns the stored transaction.
-- **Notifications:** a repeated notification (also ten at once) saves one card and succeeds once; a failure after success does not overturn it; a bad signature or a different amount changes nothing.
+- **Notifications:** a repeated notification (also ten at once) saves one card and succeeds once; a failure after success does not overturn it; a bad signature or a different amount changes nothing; a notification for an unknown invoice gets 200 and changes nothing.
 - **Validation:** a missing `Idempotency-Key` (400), an unknown customer or product (404), another customer's card (422).
 
 ### Trying a sandbox payment from Swagger
@@ -80,7 +80,7 @@ Swagger's "Try it out" cannot complete the payment itself: the 2C2P page and the
 
 ## 2C2P credentials
 
-Use the 2C2P sandbox merchant ID, secret key and the Singapore test cards from the 2C2P sandbox page.
+Use the 2C2P sandbox merchant ID and secret key from the 2C2P sandbox page, and the Singapore test cards listed under [Test cards](#test-cards).
 
 **`dotnet run`:** copy the template and fill in the two values.
 
@@ -116,6 +116,19 @@ cp appsettings.Development.example.json appsettings.Development.json
 Use the `http` launch profile locally. Outside Development the API redirects HTTP to HTTPS, and a redirect drops the body of 2C2P's notification POST.
 
 The 2C2P settings are checked on the first payment, not at startup. The customer, product and transaction endpoints work without them, and a checkout without them fails with a message naming the missing setting.
+
+### Test cards
+
+These come from 2C2P's Singapore test card set, and each one has paid successfully in the sandbox. 2C2P gives no expiry date for the Visa and Mastercard cards; `12/30` works.
+
+| Card | Number | CVV | Then |
+| --- | --- | --- | --- |
+| Visa | `4111 1111 1111 1111` | `123` | 3-D Secure OTP `123456` |
+| Mastercard | `5555 5555 5555 4444` | `123` | 3-D Secure OTP `123456` |
+| UnionPay | `6250 9470 0000 0014` | `123`, expiry `12/33` | On UnionPay's test page: mobile number `11112222`, verification code `123456` |
+
+- **A failed payment:** the Singapore set has no declined card, so fail 3-D Secure instead. Enter a wrong OTP (for example `000000`), then click **Cancel**. 2C2P answers `4081` ("Unable to authenticate card holder"), the result page shows **Payment failed** with that reason, and **Go back and try again** reopens the checkout with the same customer and product selected.
+- **UnionPay** is offered for one-time products only, and it is never saved as a card (see [Assumptions](#assumptions)).
 
 ## API
 
@@ -265,9 +278,12 @@ Both methods act only while the status is `Pending`. After a transaction becomes
 - **API version.** The v4.3 documentation pages list `/payment/4.5/...` URLs, while the v4.3 API reference uses `/payment/4.3/...`. Both paths answer in the sandbox; the code uses 4.3, and the version is part of `TwoC2P:BaseUrl`.
 - **Endpoints.** The spec's suggested endpoints are used as they are. One is added: `/api/payments/2c2p/return/{invoiceNo}` is the `frontendReturnUrl`. 2C2P may return the browser with a form POST, which a Next.js page cannot receive, and the saved-card flow must run Payment Inquiry when the customer comes back from 3-D Secure. The endpoint does both, then redirects to the frontend result page, which reads the status from `GET /api/transactions/{invoiceNo}`.
 - **Codes other than 0000.** 2C2P codes meaning "still in progress" (`0001`, `2001`) or "no record yet" (`2002`, `4071`) leave the transaction Pending rather than Failed, and a Payment Inquiry that 2C2P could not answer (a system error) changes nothing. Every other code marks it Failed. Marking Failed too early would be permanent, because a final status never changes, so a later success notification would be ignored.
-- **Saved-card field name.** Do Payment sends the saved card as `payment.data.customerToken`, as the server-side parameter table says. The mobile SDK guide uses `token`; the first sandbox run with a saved card confirms which one 2C2P expects.
+- **Saved-card field name.** Do Payment sends the saved card as `payment.data.customerToken`, as the server-side parameter table says; the mobile SDK guide uses `token`. The sandbox accepts `customerToken`: saved-card payments succeed with it (see the [demo video](#demo-video)).
 - **Amount.** The amount and currency come from the product at checkout time; one checkout buys one product.
 - **Cards** are saved only from a successful payment that returns a `customerToken`. A declined payment never saves a card.
+- **Failure path.** The spec suggests testing failures with a declined card, but 2C2P's Singapore test card set has none. Failures are tested by failing 3-D Secure instead (code `4081`, see [Test cards](#test-cards)). That takes the same path a decline would: 2C2P sends a failure notification, the transaction is marked Failed with 2C2P's code and description, and the result page offers the retry.
+- **UnionPay.** One-time products put no restriction on `paymentChannel`, so the payment page offers every method enabled for the sandbox merchant, including UnionPay (channel `UP`, paid on UnionPay's own test page). Recurring products, the only ones that save a card, are card-only (`paymentChannel: ["CC"]`, as the spec requires). UnionPay is a separate channel, so it is not offered for them, and a UnionPay card is never saved.
+- **Notification for an unknown invoice.** A correctly signed notification whose invoice number has no transaction is logged and answered with 200, as the spec asks of the handler. Sending it again cannot make the transaction appear, so an error would only make 2C2P retry. A notification with a bad signature is still rejected with 400.
 - **Unknown outcomes stay Pending.** When 2C2P cannot tell whether a charge happened, the transaction waits for the notification instead of being marked Failed.
 - **No authentication.** The customers are seeded, and any client can act for any customer. A real system would derive the customer from the signed-in user.
 
