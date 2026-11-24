@@ -2,7 +2,19 @@
 
 A checkout backend that takes payments through the **2C2P** payment gateway (PGW v4.3): one-time payments on the 2C2P payment page, recurring products that save the card, and payments with a saved card. It is built with .NET 10 / ASP.NET Core, MySQL 8.4 and Redis 7, with a small Next.js checkout page in front.
 
-**Contents:** [Setup](#setup) · [2C2P credentials](#2c2p-credentials) · [API](#api) · [Project structure](#project-structure) · [Payment flows](#payment-flows) · [Idempotency, locking and caching](#idempotency-locking-and-caching) · [Seed data](#seed-data) · [Database changes](#database-changes) · [Assumptions](#assumptions) · [What I would improve](#what-i-would-improve)
+**Contents:** [Demo video](#demo-video) · [Setup](#setup) · [2C2P credentials](#2c2p-credentials) · [API](#api) · [Project structure](#project-structure) · [Payment flows](#payment-flows) · [Idempotency, locking and caching](#idempotency-locking-and-caching) · [Seed data](#seed-data) · [Database changes](#database-changes) · [Assumptions](#assumptions) · [What I would improve](#what-i-would-improve)
+
+## Demo video
+
+[`docs/demo-recording.mp4`](docs/demo-recording.mp4) (4 min 52 s) runs the four required flows in the 2C2P sandbox:
+
+| Time | Flow | Result |
+| --- | --- | --- |
+| 0:00 | **One-time payment** on the 2C2P payment page: Jisoo Kim buys the Bangkok Tour Ticket with a Visa card. | Payment succeeded |
+| 1:20 | **Recurring payment that saves the card**: Jisoo Kim buys the Monthly Live Show with a Mastercard and ticks the save-card option. | Payment succeeded, and the card is saved |
+| 2:25 | **Saved-card payments**, with no payment page: the Square One Album (one-time), then the Yearly Photocard (recurring). | Payment succeeded |
+| 2:55 | **Failed payment**: Rose Park's 3-D Secure check fails. | Payment failed (4081, "Unable to authenticate card holder") |
+| 4:00 | **Retry**: Go back opens the checkout with Rose Park and the Square One Album selected, and the new payment goes through. | Payment succeeded |
 
 ## Setup
 
