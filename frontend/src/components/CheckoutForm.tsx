@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { checkout, getCustomerCards, getCustomers, getProducts } from "@/lib/api";
 import { customerName, formatAmount } from "@/lib/format";
 import type { Customer, CustomerCard, Product } from "@/lib/types";
@@ -73,6 +73,27 @@ export default function CheckoutForm({ initialCustomerId, initialProductId }: Pr
     };
   }, [customerId]);
 
+  // With Cache Components, Next.js does not unmount this page when the customer moves to
+  // another page in the app: it hides it (React <Activity>) and shows it again as it was.
+  // A finished checkout must not come back with the button stuck on "Processing…" and the
+  // old purchase still selected, so after a checkout has gone through, the form resets when
+  // the page is hidden. Only then: a half-filled form is kept if the customer just looks
+  // elsewhere. (Effects run again when the page is shown, so the Idempotency-Key effect
+  // above creates a new key for the next purchase.)
+  const resetWhenHidden = useRef(false);
+  useLayoutEffect(() => {
+    return () => {
+      if (resetWhenHidden.current) {
+        resetWhenHidden.current = false;
+        setCustomerId(initialCustomerId);
+        setProductId(initialProductId);
+        setCardId(null);
+        setSubmitting(false);
+        setCheckoutError(null);
+      }
+    };
+  }, [initialCustomerId, initialProductId]);
+
   // When the customer comes back from 2C2P with the browser's Back button, the page may be
   // restored from the back/forward cache with the button still disabled.
   useEffect(() => {
@@ -117,6 +138,7 @@ export default function CheckoutForm({ initialCustomerId, initialProductId }: Pr
       );
 
       // The button stays disabled from here on: the page is about to change.
+      resetWhenHidden.current = true;
       if (result.redirectUrl) {
         // The 2C2P payment page or 3-D Secure. 2C2P later sends the customer to the backend's
         // return endpoint, which redirects to the result page.
