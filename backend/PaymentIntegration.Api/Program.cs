@@ -1,10 +1,14 @@
 using Microsoft.EntityFrameworkCore;
+using PaymentIntegration.Application.Services;
 using PaymentIntegration.Infrastructure;
 using PaymentIntegration.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddInfrastructure(builder.Configuration);
+
+builder.Services.AddScoped<CustomerService>();
+builder.Services.AddScoped<ProductService>();
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi

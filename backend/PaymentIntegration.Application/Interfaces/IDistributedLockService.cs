@@ -2,6 +2,12 @@ namespace PaymentIntegration.Application.Interfaces;
 
 public interface IDistributedLockService
 {
+    /// <summary>
+    /// Takes the lock if no one holds it. Returns false if another owner holds it.
+    /// <paramref name="expiration"/> must be longer than the locked work can take. For
+    /// checkout that means longer than all the payment gateway calls made while the lock is
+    /// held, plus the database work, or the lock can expire mid-call and let a retry in.
+    /// </summary>
     Task<bool> AcquireLockAsync(
         string key,
         string lockValue,
