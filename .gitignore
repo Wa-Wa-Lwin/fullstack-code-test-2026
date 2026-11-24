@@ -51,6 +51,7 @@ pnpm-debug.log*
 .env.*
 !.env.example
 appsettings.*.local.json
+appsettings.Development.json
 *.pfx
 *.pem
 secrets.json
