@@ -1,7 +1,6 @@
 using Microsoft.Extensions.Logging;
 using PaymentIntegration.Application.Exceptions;
 using PaymentIntegration.Application.Interfaces;
-using PaymentIntegration.Domain.Entities;
 
 namespace PaymentIntegration.Application.Services;
 
@@ -15,7 +14,8 @@ public class PaymentNotificationService(
     /// <summary>
     /// Verifies the payload, then applies its result. A notification that fails verification
     /// throws <see cref="ValidationException"/> before the database is touched. A repeated
-    /// notification is harmless: a final transaction never changes.
+    /// notification is harmless: a final transaction never changes. A verified notification
+    /// for an unknown invoice is logged and ignored.
     /// </summary>
     public async Task HandleAsync(string? payload, CancellationToken ct)
     {
@@ -25,8 +25,12 @@ public class PaymentNotificationService(
         var transaction = await transactions.GetByInvoiceNoAsync(result.InvoiceNo!, ct);
         if (transaction is null)
         {
-            logger.LogWarning("Payment notification for unknown invoice {InvoiceNo}.", result.InvoiceNo);
-            throw new NotFoundException(nameof(Transaction), result.InvoiceNo!);
+            // Signed with the merchant key, so it is genuine, but no transaction has this
+            // invoice (for example, the database was reset while a payment page was open).
+            // Sending it again cannot make the transaction appear, so it is acknowledged rather
+            // than rejected: an error response would only make the provider retry.
+            logger.LogWarning("Ignoring a payment notification for unknown invoice {InvoiceNo}.", result.InvoiceNo);
+            return;
         }
 
         await results.ApplyAsync(transaction, result, ct);

@@ -149,6 +149,24 @@ public class PaymentNotificationTests(ApiFixture fixture)
         Assert.Equal(0, await CountCardsAsync(3, customerToken));
     }
 
+    [Fact]
+    public async Task A_notification_for_an_unknown_invoice_is_acknowledged_and_changes_nothing()
+    {
+        var invoiceNo = "INVUNKNOWN" + Guid.NewGuid().ToString("N")[..12].ToUpperInvariant();
+        var customerToken = NewCustomerToken();
+
+        var response = await PostNotificationAsync(
+            fixture.Factory.CreateClient(), Sign(Notification(invoiceNo, Price, customerToken)));
+
+        // 200, so 2C2P does not keep retrying a notification that can never be applied.
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        await using var scope = fixture.Factory.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<PaymentDbContext>();
+        Assert.False(await db.Transactions.AnyAsync(t => t.InvoiceNo == invoiceNo));
+        Assert.False(await db.CustomerCards.AnyAsync(c => c.CustomerToken == customerToken));
+    }
+
     private static Dictionary<string, object?> Notification(
         string invoiceNo,
         decimal amount,

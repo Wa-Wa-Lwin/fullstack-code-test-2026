@@ -20,14 +20,15 @@ public class PaymentsController(
     /// </remarks>
     /// <param name="request">The signed notification.</param>
     /// <param name="ct">Cancelled when the caller disconnects.</param>
-    /// <response code="200">The notification was verified and applied (or was a repeat).</response>
+    /// <response code="200">
+    /// The notification was verified and applied. A repeat, or a notification for an unknown
+    /// invoice (logged), is acknowledged and changes nothing.
+    /// </response>
     /// <response code="400">The payload is missing or its signature is invalid.</response>
-    /// <response code="404">No transaction has the notification's invoice number.</response>
     [HttpPost("2c2p/notification")]
     [Consumes("application/json")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Notification([FromBody] PaymentNotificationRequest request, CancellationToken ct)
     {
         await notifications.HandleAsync(request.Payload, ct);
