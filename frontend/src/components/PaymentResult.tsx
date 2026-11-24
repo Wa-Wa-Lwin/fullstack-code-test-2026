@@ -79,7 +79,8 @@ function Processing({ invoiceNo }: { invoiceNo: string }) {
       <div>
         <h1 className="text-xl font-semibold text-gray-900">Processing payment</h1>
         <p className="mt-1 text-sm text-gray-600">
-          We are waiting for 2C2P to confirm payment {invoiceNo}. This page updates on its own.
+          We are waiting for 2C2P to confirm payment {invoiceNo}. This usually takes a few seconds,
+          and this page updates automatically. You do not need to pay again.
         </p>
       </div>
     </div>
@@ -117,15 +118,26 @@ function Failed({ transaction }: { transaction: Transaction }) {
   return (
     <>
       <h1 className="text-xl font-semibold text-red-700">Payment failed</h1>
-      <p className="text-sm text-gray-700">{transaction.respDesc || "The payment was not completed."}</p>
-      <p className="text-sm text-gray-500">
-        Invoice number <span className="font-mono">{transaction.invoiceNo}</span>
+      <p className="text-sm text-gray-700">The payment did not go through.</p>
+      <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-sm">
+        <dt className="text-gray-500">Reason</dt>
+        <dd className="text-gray-900">{transaction.respDesc || "2C2P gave no reason."}</dd>
+        <dt className="text-gray-500">Product</dt>
+        <dd className="text-gray-900">{transaction.productName}</dd>
+        <dt className="text-gray-500">Amount</dt>
+        <dd className="text-gray-900">{formatAmount(transaction.amount, transaction.currency)}</dd>
+        <dt className="text-gray-500">Invoice number</dt>
+        <dd className="font-mono text-gray-900">{transaction.invoiceNo}</dd>
+      </dl>
+      <p className="text-sm text-gray-600">
+        To try again, go back to checkout. The same customer and product will already be selected,
+        and a new payment is started when you click Checkout.
       </p>
       <Link
         href={retryHref}
         className="inline-block rounded-lg bg-blue-600 px-4 py-2.5 font-semibold text-white hover:bg-blue-700"
       >
-        Go back
+        Go back and try again
       </Link>
     </>
   );

@@ -236,11 +236,9 @@ export default function CheckoutForm({ initialCustomerId, initialProductId }: Pr
             <dt className="text-gray-500">Currency</dt>
             <dd className="text-gray-900">{product.currency}</dd>
           </dl>
-          {product.paymentType === "Recurring" && !card && (
-            <p className="mt-3 text-sm text-gray-600">
-              To save your card for later, tick the save-card option on the payment page.
-            </p>
-          )}
+          <p className="mt-3 border-t border-gray-200 pt-3 text-sm text-gray-600">
+            {nextStep(product, card)}
+          </p>
         </section>
       )}
 
@@ -276,6 +274,17 @@ function Alert({ children }: { children: React.ReactNode }) {
       {children}
     </p>
   );
+}
+
+/** What happens after Checkout, so the customer knows whether a 2C2P page comes next. */
+function nextStep(product: Product, card: CustomerCard | null): string {
+  if (card) {
+    return `Your saved card ${card.maskedCardNo} is charged directly. You will not see the 2C2P payment page, unless your bank asks for a one-time password.`;
+  }
+  if (product.paymentType === "Recurring") {
+    return "You will pay on the 2C2P payment page. Recurring products accept cards only: tick the save-card option there to save your card for your next payment.";
+  }
+  return "You will pay on the 2C2P payment page, where you can choose any available payment method.";
 }
 
 function messageOf(error: unknown): string {

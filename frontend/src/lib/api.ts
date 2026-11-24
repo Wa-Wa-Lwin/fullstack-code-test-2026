@@ -93,7 +93,10 @@ async function getJson<T>(path: string): Promise<T> {
 }
 
 async function toApiError(response: Response): Promise<ApiError> {
-  let message = `The request failed (HTTP ${response.status}).`;
+  let message =
+    response.status >= 500
+      ? `The payment server is not responding (HTTP ${response.status}). Please try again in a moment.`
+      : `The request failed (HTTP ${response.status}).`;
 
   try {
     const problem = (await response.json()) as ProblemDetails;
