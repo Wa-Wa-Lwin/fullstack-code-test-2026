@@ -12,5 +12,5 @@ public class CheckoutResponse
 
     public string Status { get; set; } = string.Empty;
 
-    public string? PaymentUrl { get; set; }
+    public string? RedirectUrl { get; set; }
 }

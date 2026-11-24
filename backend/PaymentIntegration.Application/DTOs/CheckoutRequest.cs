@@ -6,5 +6,5 @@ public class CheckoutRequest
 
     public int ProductId { get; set; }
 
-    public string IdempotencyKey { get; set; } = string.Empty;
+    public int? CustomerCardId { get; set; }
 }
