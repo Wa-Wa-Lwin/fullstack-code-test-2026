@@ -133,13 +133,8 @@ function Failed({ transaction }: { transaction: Transaction }) {
 
 function ErrorMessage({ message }: { message: string }) {
   return (
-    <div className="space-y-4">
-      <p role="alert" className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-        {message}
-      </p>
-      <Link href="/" className="inline-block text-sm font-medium text-blue-600 hover:underline">
-        Back to checkout
-      </Link>
-    </div>
+    <p role="alert" className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+      {message}
+    </p>
   );
 }
