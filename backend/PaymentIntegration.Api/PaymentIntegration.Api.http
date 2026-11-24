@@ -1,6 +1,46 @@
-@PaymentIntegration.Api_HostAddress = http://localhost:5263
+@host = http://localhost:5263
 
-GET {{PaymentIntegration.Api_HostAddress}}/weatherforecast/
+GET {{host}}/api/customers
+Accept: application/json
+
+###
+
+GET {{host}}/api/products
+Accept: application/json
+
+###
+
+GET {{host}}/api/customers/1/cards
+Accept: application/json
+
+###
+
+# Hosted payment page. Reuse the same Idempotency-Key to get the same transaction back.
+POST {{host}}/api/checkout
+Content-Type: application/json
+Idempotency-Key: 6f1c2a8e-5b0d-4c47-9f3e-2d8a1b7c9e01
+
+{
+  "customerId": 1,
+  "productId": 1
+}
+
+###
+
+# Saved card (use an ID from /api/customers/1/cards).
+POST {{host}}/api/checkout
+Content-Type: application/json
+Idempotency-Key: 0b7d4e22-91c3-4f5a-8a6b-3e2f1d0c9b88
+
+{
+  "customerId": 1,
+  "productId": 3,
+  "customerCardId": 1
+}
+
+###
+
+GET {{host}}/api/transactions/INV20261124120000AB12CD
 Accept: application/json
 
 ###

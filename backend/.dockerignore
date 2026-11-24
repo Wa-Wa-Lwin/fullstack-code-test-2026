@@ -1,0 +1,10 @@
+**/bin/
+**/obj/
+**/*.user
+# Secrets never go into the image; Compose passes them in from .env.
+**/appsettings.Development.json
+**/appsettings.*.local.json
+**/secrets.json
+PaymentIntegration.Tests/
+Dockerfile
+.dockerignore

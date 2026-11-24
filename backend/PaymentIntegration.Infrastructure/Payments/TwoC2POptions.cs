@@ -18,7 +18,12 @@ public sealed class TwoC2POptions
     /// </summary>
     public string BaseUrl { get; set; } = string.Empty;
 
-    /// <summary>Where 2C2P sends the customer's browser after the payment page.</summary>
+    public const string InvoiceNoPlaceholder = "{invoiceNo}";
+
+    /// <summary>
+    /// Where 2C2P sends the customer's browser after the payment page or 3-D Secure.
+    /// <see cref="InvoiceNoPlaceholder"/> is replaced with the payment's invoice number.
+    /// </summary>
     public string FrontendReturnUrl { get; set; } = string.Empty;
 
     /// <summary>Where 2C2P posts the server-to-server payment notification.</summary>
@@ -26,7 +31,7 @@ public sealed class TwoC2POptions
 }
 
 /// <summary>
-/// Runs when the gateway is first created (the first checkout), not at startup, so the API
+/// Runs on the gateway's first 2C2P call (the first checkout), not at startup, so the API
 /// still serves its other endpoints while the 2C2P settings are missing.
 /// </summary>
 internal sealed class TwoC2POptionsValidator : IValidateOptions<TwoC2POptions>
@@ -50,7 +55,10 @@ internal sealed class TwoC2POptionsValidator : IValidateOptions<TwoC2POptions>
         }
 
         AddIfNotAbsoluteUrl(errors, $"{section}:BaseUrl", options.BaseUrl);
-        AddIfNotAbsoluteUrl(errors, $"{section}:FrontendReturnUrl", options.FrontendReturnUrl);
+        AddIfNotAbsoluteUrl(
+            errors,
+            $"{section}:FrontendReturnUrl",
+            options.FrontendReturnUrl.Replace(TwoC2POptions.InvoiceNoPlaceholder, "INV0"));
         AddIfNotAbsoluteUrl(errors, $"{section}:BackendReturnUrl", options.BackendReturnUrl);
 
         return errors.Count == 0 ? ValidateOptionsResult.Success : ValidateOptionsResult.Fail(errors);

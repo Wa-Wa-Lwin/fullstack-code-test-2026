@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text.Json;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using PaymentIntegration.Application.DTOs.Payments;
@@ -19,7 +20,7 @@ public class TwoC2PPaymentGatewayTests
         SecretKey = SecretKey,
         BaseUrl = "https://pgw.test/payment/4.3/",
         FrontendReturnUrl = "https://shop.test/payment/result",
-        BackendReturnUrl = "https://api.test/api/payments/notification",
+        BackendReturnUrl = "https://api.test/api/payments/2c2p/notification",
     };
 
     private readonly StubHttpMessageHandler _http = new();
@@ -87,6 +88,7 @@ public class TwoC2PPaymentGatewayTests
             () => _gateway.CreateHostedPaymentAsync(HostedRequest(saveCard: false), default));
 
         Assert.Equal("9042", ex.ProviderCode);
+        Assert.Equal("Hash value mismatch", ex.ProviderDescription);
     }
 
     [Fact]
@@ -128,6 +130,47 @@ public class TwoC2PPaymentGatewayTests
             () => _gateway.CreateHostedPaymentAsync(HostedRequest(saveCard: false), default));
 
         Assert.Contains("404", ex.Message);
+    }
+
+    [Fact]
+    public async Task The_invoice_number_is_put_into_the_frontend_return_url()
+    {
+        var options = Options.Create(new TwoC2POptions
+        {
+            MerchantId = "JT01",
+            SecretKey = SecretKey,
+            BaseUrl = GatewayOptions.BaseUrl,
+            FrontendReturnUrl = "https://api.test/api/payments/2c2p/return/{invoiceNo}",
+            BackendReturnUrl = GatewayOptions.BackendReturnUrl,
+        });
+        var gateway = new TwoC2PPaymentGateway(new HttpClient(_http), options, NullLogger<TwoC2PPaymentGateway>.Instance);
+        _http.RespondJson("paymentToken", Signed(TokenSuccess));
+
+        await gateway.CreateHostedPaymentAsync(HostedRequest(saveCard: false), default);
+
+        var payload = await SignedRequestPayload(_http.Requests[0]);
+        Assert.Equal(
+            "https://api.test/api/payments/2c2p/return/INV0001",
+            payload.GetProperty("frontendReturnUrl").GetString());
+    }
+
+    [Fact]
+    public async Task Missing_settings_fail_the_call_with_a_gateway_exception_not_the_construction()
+    {
+        var services = new ServiceCollection();
+        services.AddOptions<TwoC2POptions>();
+        services.AddSingleton<IValidateOptions<TwoC2POptions>, TwoC2POptionsValidator>();
+        var options = services
+            .BuildServiceProvider()
+            .GetRequiredService<IOptions<TwoC2POptions>>();
+
+        // Creating the gateway must not throw: services that only read the database use it too.
+        var gateway = new TwoC2PPaymentGateway(new HttpClient(_http), options, NullLogger<TwoC2PPaymentGateway>.Instance);
+
+        var ex = await Assert.ThrowsAsync<PaymentGatewayException>(
+            () => gateway.CreateHostedPaymentAsync(HostedRequest(saveCard: false), default));
+        Assert.Contains("TwoC2P:SecretKey", ex.Message);
+        Assert.Empty(_http.Requests);
     }
 
     // ---- Saved card: Payment Token, Do Payment, Payment Inquiry ----

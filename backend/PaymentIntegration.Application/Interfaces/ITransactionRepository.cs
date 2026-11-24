@@ -20,6 +20,17 @@ public interface ITransactionRepository
         Transaction transaction,
         CancellationToken ct);
 
+    /// <summary>
+    /// Inserts the transaction and writes it at once. Returns false, inserting nothing, if
+    /// a row with the same idempotency key or invoice number already exists: the unique
+    /// indexes decide, so of two concurrent inserts exactly one wins. On success the
+    /// transaction stays tracked, so a later <see cref="SaveChangesAsync"/> writes changes
+    /// made to it (such as the payment token).
+    /// </summary>
+    Task<bool> TryAddAsync(
+        Transaction transaction,
+        CancellationToken ct);
+
     Task UpdateAsync(
         Transaction transaction,
         CancellationToken ct);

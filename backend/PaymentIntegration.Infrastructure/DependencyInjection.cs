@@ -52,20 +52,16 @@ public static class DependencyInjection
         services.AddSingleton<ICacheService, RedisCacheService>();
         services.AddSingleton<IDistributedLockService, RedisDistributedLockService>();
 
-        // Validated when the gateway is first created, so a missing secret fails the first
-        // checkout with a clear message instead of stopping the whole API.
+        // Validated on the gateway's first 2C2P call, so a missing secret fails that checkout
+        // with a clear message instead of stopping the whole API.
         services.AddOptions<TwoC2POptions>().Bind(configuration.GetSection(TwoC2POptions.SectionName));
         services.AddSingleton<IValidateOptions<TwoC2POptions>, TwoC2POptionsValidator>();
 
         // A typed client with no retry or resilience handler on purpose: retrying Do Payment
         // could charge the customer twice.
-        services.AddHttpClient<IPaymentGateway, TwoC2PPaymentGateway>((sp, client) =>
+        // The gateway builds each URL from TwoC2P:BaseUrl itself, on first use.
+        services.AddHttpClient<IPaymentGateway, TwoC2PPaymentGateway>(client =>
         {
-            var options = sp.GetRequiredService<IOptions<TwoC2POptions>>().Value;
-
-            // A trailing slash makes the endpoint names resolve under the versioned path.
-            client.BaseAddress = new Uri(options.BaseUrl.TrimEnd('/') + "/");
-
             // The checkout lock must outlive every 2C2P call made while it is held (up to three
             // in a row for a saved card), so set this explicitly instead of the 100s default.
             client.Timeout = TimeSpan.FromSeconds(15);

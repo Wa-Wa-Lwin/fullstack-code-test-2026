@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using MySql.Data.MySqlClient;
 using PaymentIntegration.Application.Interfaces;
 using PaymentIntegration.Domain.Entities;
 using PaymentIntegration.Domain.Enums;
@@ -29,6 +30,27 @@ public class TransactionRepository(PaymentDbContext db) : ITransactionRepository
     {
         db.Transactions.Add(transaction);
         return Task.CompletedTask;
+    }
+
+    public async Task<bool> TryAddAsync(Transaction transaction, CancellationToken ct)
+    {
+        db.Transactions.Add(transaction);
+
+        try
+        {
+            await db.SaveChangesAsync(ct);
+            return true;
+        }
+        catch (DbUpdateException ex) when (ex.InnerException is MySqlException
+        {
+            Number: (int)MySqlErrorCode.DuplicateKeyEntry
+        })
+        {
+            // A concurrent request inserted the same idempotency key first; the unique
+            // index rejected this row. Stop tracking it so nothing retries the insert.
+            db.Entry(transaction).State = EntityState.Detached;
+            return false;
+        }
     }
 
     public Task UpdateAsync(Transaction transaction, CancellationToken ct)

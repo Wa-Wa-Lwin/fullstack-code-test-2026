@@ -30,5 +30,30 @@ services:
       timeout: 3s
       retries: 5
 
+  api:
+    build:
+      context: ./backend
+    container_name: payment-api
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      # Development runs the startup migrations and serves Swagger at /swagger.
+      ASPNETCORE_ENVIRONMENT: Development
+      # Inside Compose the services reach each other by name on their container ports.
+      ConnectionStrings__PaymentDb: "Server=mysql;Port=3306;Database=payment_db;User=payment_user;Password=dev_payment_password"
+      ConnectionStrings__Redis: "redis:6379"
+      # Secrets come from .env (git-ignored); see .env.example.
+      TwoC2P__MerchantId: ${TWOC2P_MERCHANT_ID:-}
+      TwoC2P__SecretKey: ${TWOC2P_SECRET_KEY:-}
+      TwoC2P__FrontendReturnUrl: "http://localhost:8080/api/payments/2c2p/return/{invoiceNo}"
+      TwoC2P__BackendReturnUrl: ${TWOC2P_BACKEND_RETURN_URL:-http://localhost:8080/api/payments/2c2p/notification}
+    ports:
+      # 8080, not 5263, so it does not clash with `dotnet run`.
+      - "8080:8080"
+
 volumes:
   mysql_data:

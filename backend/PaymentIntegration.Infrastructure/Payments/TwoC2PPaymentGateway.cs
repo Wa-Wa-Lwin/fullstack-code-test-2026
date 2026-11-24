@@ -31,8 +31,7 @@ public sealed class TwoC2PPaymentGateway : IPaymentGateway
     };
 
     private readonly HttpClient _http;
-    private readonly TwoC2POptions _options;
-    private readonly TwoC2PJwt _jwt;
+    private readonly Lazy<GatewayConfig> _config;
     private readonly ILogger<TwoC2PPaymentGateway> _logger;
 
     public TwoC2PPaymentGateway(
@@ -41,10 +40,32 @@ public sealed class TwoC2PPaymentGateway : IPaymentGateway
         ILogger<TwoC2PPaymentGateway> logger)
     {
         _http = http;
-        _options = options.Value;
-        _jwt = new TwoC2PJwt(_options.SecretKey);
         _logger = logger;
+
+        // Read on first use, not here: services that only sometimes call 2C2P (such as the
+        // transaction lookup) can then be created while the 2C2P settings are missing.
+        _config = new Lazy<GatewayConfig>(() =>
+        {
+            try
+            {
+                var value = options.Value;
+                return new GatewayConfig(
+                    value,
+                    new TwoC2PJwt(value.SecretKey),
+                    // A trailing slash makes the endpoint names resolve under the versioned path.
+                    new Uri(value.BaseUrl.TrimEnd('/') + "/"));
+            }
+            catch (OptionsValidationException ex)
+            {
+                throw new PaymentGatewayException(
+                    "2C2P is not configured: " + string.Join(" ", ex.Failures), innerException: ex);
+            }
+        });
     }
+
+    private sealed record GatewayConfig(TwoC2POptions Options, TwoC2PJwt Jwt, Uri BaseUri);
+
+    private GatewayConfig Config => _config.Value;
 
     public async Task<HostedPaymentResult> CreateHostedPaymentAsync(
         HostedPaymentRequest request,
@@ -164,7 +185,7 @@ public sealed class TwoC2PPaymentGateway : IPaymentGateway
 
     public async Task<PaymentResult> InquireAsync(string invoiceNo, CancellationToken ct)
     {
-        var inquiry = new PaymentInquiryRequest { MerchantId = _options.MerchantId, InvoiceNo = invoiceNo };
+        var inquiry = new PaymentInquiryRequest { MerchantId = Config.Options.MerchantId, InvoiceNo = invoiceNo };
 
         var (response, signed) = await PostAsync<PaymentResultPayload>(
             PaymentInquiryPath, SignedEnvelope(inquiry), "Payment Inquiry", ct);
@@ -177,7 +198,8 @@ public sealed class TwoC2PPaymentGateway : IPaymentGateway
         {
             throw new PaymentGatewayException(
                 $"2C2P could not answer the Payment Inquiry for invoice {invoiceNo}: {response.RespCode} {response.RespDesc}",
-                response.RespCode);
+                response.RespCode,
+                providerDescription: response.RespDesc);
         }
 
         RequireSignedSuccess(signed, response.RespCode, "Payment Inquiry");
@@ -197,7 +219,7 @@ public sealed class TwoC2PPaymentGateway : IPaymentGateway
         string json;
         try
         {
-            json = await _jwt.VerifyAsync(payload);
+            json = await Config.Jwt.VerifyAsync(payload);
         }
         catch (SecurityTokenException ex)
         {
@@ -232,14 +254,15 @@ public sealed class TwoC2PPaymentGateway : IPaymentGateway
         string currency)
         => new()
         {
-            MerchantId = _options.MerchantId,
+            MerchantId = Config.Options.MerchantId,
             InvoiceNo = invoiceNo,
             // 2C2P requires special characters in the description to be HTML-encoded.
             Description = WebUtility.HtmlEncode(description),
             Amount = amount,
             CurrencyCode = currency,
-            FrontendReturnUrl = _options.FrontendReturnUrl,
-            BackendReturnUrl = _options.BackendReturnUrl,
+            FrontendReturnUrl = Config.Options.FrontendReturnUrl.Replace(
+                TwoC2POptions.InvoiceNoPlaceholder, Uri.EscapeDataString(invoiceNo)),
+            BackendReturnUrl = Config.Options.BackendReturnUrl,
         };
 
     private async Task<PaymentTokenResponse> RequestPaymentTokenAsync(
@@ -257,7 +280,8 @@ public sealed class TwoC2PPaymentGateway : IPaymentGateway
         {
             throw new PaymentGatewayException(
                 $"2C2P rejected the Payment Token request for invoice {request.InvoiceNo}: {response.RespCode} {response.RespDesc}",
-                response.RespCode);
+                response.RespCode,
+                providerDescription: response.RespDesc);
         }
 
         RequireSignedSuccess(signed, response.RespCode, "Payment Token");
@@ -272,7 +296,7 @@ public sealed class TwoC2PPaymentGateway : IPaymentGateway
     }
 
     private object SignedEnvelope<T>(T payload)
-        => new { payload = _jwt.Sign(JsonSerializer.Serialize(payload, JsonOptions)) };
+        => new { payload = Config.Jwt.Sign(JsonSerializer.Serialize(payload, JsonOptions)) };
 
     /// <summary>
     /// Posts JSON and reads the response in either shape 2C2P uses: a signed
@@ -292,7 +316,7 @@ public sealed class TwoC2PPaymentGateway : IPaymentGateway
         HttpResponseMessage httpResponse;
         try
         {
-            httpResponse = await _http.PostAsync(path, content, ct);
+            httpResponse = await _http.PostAsync(new Uri(Config.BaseUri, path), content, ct);
         }
         catch (HttpRequestException ex)
         {
@@ -355,7 +379,7 @@ public sealed class TwoC2PPaymentGateway : IPaymentGateway
             && payload.ValueKind == JsonValueKind.String
             && payload.GetString() is { Length: > 0 } token)
         {
-            return (await _jwt.VerifyAsync(token), true);
+            return (await Config.Jwt.VerifyAsync(token), true);
         }
 
         return (text, false);
