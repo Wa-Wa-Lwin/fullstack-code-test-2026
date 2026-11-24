@@ -54,7 +54,7 @@ public class TwoC2PPaymentGatewayTests
         var payload = await SignedRequestPayload(request);
         Assert.Equal("JT01", payload.GetProperty("merchantID").GetString());
         Assert.Equal("INV0001", payload.GetProperty("invoiceNo").GetString());
-        Assert.Equal("Wireless Mouse", payload.GetProperty("description").GetString());
+        Assert.Equal("Square One Album", payload.GetProperty("description").GetString());
         Assert.Equal(29.90m, payload.GetProperty("amount").GetDecimal());
         Assert.Equal("SGD", payload.GetProperty("currencyCode").GetString());
         Assert.Equal(GatewayOptions.FrontendReturnUrl, payload.GetProperty("frontendReturnUrl").GetString());
@@ -222,7 +222,7 @@ public class TwoC2PPaymentGatewayTests
         Assert.Equal("411111XXXXXX1111", result.Payment.MaskedAccountNumber);
         Assert.Equal("TR-9", result.Payment.ProviderReference);
         Assert.Equal("CC", result.Payment.PaymentChannel);
-        Assert.Equal(12.98m, result.Payment.Amount);
+        Assert.Equal(99.00m, result.Payment.Amount);
         Assert.Null(result.RedirectUrl);
 
         var inquiry = await SignedRequestPayload(_http.Requests[2]);
@@ -364,7 +364,7 @@ public class TwoC2PPaymentGatewayTests
     {
         merchantID = "JT01",
         invoiceNo = "INV0002",
-        amount = 12.98m,
+        amount = 99.00m,
         currencyCode = "SGD",
         channelCode = "CC",
         accountNo = "411111XXXXXX1111",
@@ -381,7 +381,7 @@ public class TwoC2PPaymentGatewayTests
         InvoiceNo = "INV0001",
         Amount = 29.90m,
         Currency = "SGD",
-        Description = "Wireless Mouse",
+        Description = "Square One Album",
         SaveCard = saveCard,
     };
 
@@ -389,9 +389,9 @@ public class TwoC2PPaymentGatewayTests
     {
         InvoiceNo = "INV0002",
         CustomerToken = "CT-123",
-        Amount = 12.98m,
+        Amount = 99.00m,
         Currency = "SGD",
-        Description = "Music Streaming Membership",
+        Description = "Yearly Photocard",
     };
 
     private string Signed(object payload)

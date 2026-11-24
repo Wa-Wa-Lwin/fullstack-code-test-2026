@@ -5,7 +5,7 @@ public class ProductDto
     /// <example>3</example>
     public int Id { get; set; }
 
-    /// <example>Cloud Storage Plan</example>
+    /// <example>Monthly Live Show</example>
     public string Name { get; set; } = string.Empty;
 
     /// <example>100 GB of cloud storage, billed monthly.</example>

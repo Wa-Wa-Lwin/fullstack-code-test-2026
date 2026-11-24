@@ -13,9 +13,10 @@ public static class SeedData
 {
     public static Customer[] Customers =>
     [
-        new() { Id = 1, FirstName = "Alice", LastName = "Tan", Email = "alice.tan@example.com" },
-        new() { Id = 2, FirstName = "Ben", LastName = "Lim", Email = "ben.lim@example.com" },
-        new() { Id = 3, FirstName = "Chloe", LastName = "Ng", Email = "chloe.ng@example.com" },
+        new() { Id = 1, FirstName = "Lisa", LastName = "La", Email = "lisa.la@example.com" },
+        new() { Id = 2, FirstName = "Rose", LastName = "Park", Email = "rose.park@example.com" },
+        new() { Id = 3, FirstName = "Jennie", LastName = "Kim", Email = "jennie.kim@example.com" },
+        new() { Id = 4, FirstName = "Jisoo", LastName = "Kim", Email = "jisoo.kim@example.com" },
     ];
 
     public static Product[] Products =>
@@ -23,26 +24,26 @@ public static class SeedData
         new()
         {
             Id = 1,
-            Name = "Wireless Mouse",
-            Description = "Compact Bluetooth mouse with a rechargeable battery.",
-            Price = 29.90m,
+            Name = "Bangkok Tour Ticket",
+            Description = "One standing ticket for the Bangkok stop of the concert tour.",
+            Price = 188.00m,
             Currency = "SGD",
             PaymentType = PaymentType.OneTime,
         },
         new()
         {
             Id = 2,
-            Name = "Mechanical Keyboard",
-            Description = "Tenkeyless keyboard with hot-swappable switches.",
-            Price = 149.00m,
+            Name = "Square One Album",
+            Description = "The Square One single album, CD edition.",
+            Price = 29.90m,
             Currency = "SGD",
             PaymentType = PaymentType.OneTime,
         },
         new()
         {
             Id = 3,
-            Name = "Cloud Storage Plan",
-            Description = "100 GB of cloud storage, billed monthly to a saved card.",
+            Name = "Monthly Live Show",
+            Description = "Monthly access to the live show stream, billed to a saved card.",
             Price = 9.99m,
             Currency = "SGD",
             PaymentType = PaymentType.Recurring,
@@ -50,9 +51,9 @@ public static class SeedData
         new()
         {
             Id = 4,
-            Name = "Music Streaming Membership",
-            Description = "Ad-free music streaming, billed monthly to a saved card.",
-            Price = 12.98m,
+            Name = "Yearly Photocard",
+            Description = "A new photocard set every year, billed to a saved card.",
+            Price = 99.00m,
             Currency = "SGD",
             PaymentType = PaymentType.Recurring,
         },

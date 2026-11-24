@@ -57,23 +57,30 @@ namespace PaymentIntegration.Infrastructure.Persistence.Migrations
                         new
                         {
                             Id = 1,
-                            Email = "alice.tan@example.com",
-                            FirstName = "Alice",
-                            LastName = "Tan"
+                            Email = "lisa.la@example.com",
+                            FirstName = "Lisa",
+                            LastName = "La"
                         },
                         new
                         {
                             Id = 2,
-                            Email = "ben.lim@example.com",
-                            FirstName = "Ben",
-                            LastName = "Lim"
+                            Email = "rose.park@example.com",
+                            FirstName = "Rose",
+                            LastName = "Park"
                         },
                         new
                         {
                             Id = 3,
-                            Email = "chloe.ng@example.com",
-                            FirstName = "Chloe",
-                            LastName = "Ng"
+                            Email = "jennie.kim@example.com",
+                            FirstName = "Jennie",
+                            LastName = "Kim"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Email = "jisoo.kim@example.com",
+                            FirstName = "Jisoo",
+                            LastName = "Kim"
                         });
                 });
 
@@ -163,26 +170,26 @@ namespace PaymentIntegration.Infrastructure.Persistence.Migrations
                         {
                             Id = 1,
                             Currency = "SGD",
-                            Description = "Compact Bluetooth mouse with a rechargeable battery.",
-                            Name = "Wireless Mouse",
+                            Description = "One standing ticket for the Bangkok stop of the concert tour.",
+                            Name = "Bangkok Tour Ticket",
                             PaymentType = "OneTime",
-                            Price = 29.90m
+                            Price = 188.00m
                         },
                         new
                         {
                             Id = 2,
                             Currency = "SGD",
-                            Description = "Tenkeyless keyboard with hot-swappable switches.",
-                            Name = "Mechanical Keyboard",
+                            Description = "The Square One single album, CD edition.",
+                            Name = "Square One Album",
                             PaymentType = "OneTime",
-                            Price = 149.00m
+                            Price = 29.90m
                         },
                         new
                         {
                             Id = 3,
                             Currency = "SGD",
-                            Description = "100 GB of cloud storage, billed monthly to a saved card.",
-                            Name = "Cloud Storage Plan",
+                            Description = "Monthly access to the live show stream, billed to a saved card.",
+                            Name = "Monthly Live Show",
                             PaymentType = "Recurring",
                             Price = 9.99m
                         },
@@ -190,10 +197,10 @@ namespace PaymentIntegration.Infrastructure.Persistence.Migrations
                         {
                             Id = 4,
                             Currency = "SGD",
-                            Description = "Ad-free music streaming, billed monthly to a saved card.",
-                            Name = "Music Streaming Membership",
+                            Description = "A new photocard set every year, billed to a saved card.",
+                            Name = "Yearly Photocard",
                             PaymentType = "Recurring",
-                            Price = 12.98m
+                            Price = 99.00m
                         });
                 });
 

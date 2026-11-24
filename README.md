@@ -1,6 +1,8 @@
 # fullstack-code-test-2026
 
-A checkout backend that takes payments through the **2C2P** payment gateway (PGW v4.3): one-time payments on the 2C2P payment page, recurring products that save the card, and payments with a saved card. It is built with .NET 10 / ASP.NET Core, MySQL 8.4 and Redis 7.
+A checkout backend that takes payments through the **2C2P** payment gateway (PGW v4.3): one-time payments on the 2C2P payment page, recurring products that save the card, and payments with a saved card. It is built with .NET 10 / ASP.NET Core, MySQL 8.4 and Redis 7, with a small Next.js checkout page in front.
+
+**Contents:** [Setup](#setup) · [2C2P credentials](#2c2p-credentials) · [API](#api) · [Project structure](#project-structure) · [Payment flows](#payment-flows) · [Idempotency, locking and caching](#idempotency-locking-and-caching) · [Seed data](#seed-data) · [Database changes](#database-changes) · [Assumptions](#assumptions) · [What I would improve](#what-i-would-improve)
 
 ## Setup
 
@@ -48,11 +50,51 @@ cd backend
 dotnet test PaymentIntegration.slnx
 ```
 
-The integration tests start their own MySQL and Redis containers with Testcontainers, so Docker must be running. They never touch the development database.
+The integration tests start their own MySQL and Redis containers with Testcontainers, so Docker must be running. They never touch the development database. 2C2P is replaced by a fake gateway in the integration tests and by a fake HTTP handler in the gateway unit tests, so no test calls the sandbox.
+
+- **Unit:** JWT signing and verification (a tampered or wrongly signed payload is rejected) and the gateway's mapping of 2C2P requests, responses and codes.
+- **Idempotency:** concurrent checkouts with one key create one transaction and one gateway call, with and without the Redis lock; a repeat after completion returns the stored transaction.
+- **Notifications:** a repeated notification (also ten at once) saves one card and succeeds once; a failure after success does not overturn it; a bad signature or a different amount changes nothing.
+- **Validation:** a missing `Idempotency-Key` (400), an unknown customer or product (404), another customer's card (422).
+
+### Trying a sandbox payment from Swagger
+
+1. Open http://localhost:5263/swagger and call `POST /api/checkout` with any UUID in the `Idempotency-Key` header and the body `{ "customerId": 1, "productId": 1 }` (product 3 or 4 for a recurring product that saves the card).
+2. Open the returned `redirectUrl` in a browser and pay with a 2C2P sandbox test card.
+3. 2C2P returns the browser to the API, which runs a Payment Inquiry and redirects to the frontend result page (start the frontend to see it, or ignore the error page).
+4. Call `GET /api/transactions/{invoiceNo}` to see the stored status. After a recurring product, `GET /api/customers/1/cards` lists the saved card, and checkout with `"customerCardId": <id>` charges it directly.
+
+Swagger's "Try it out" cannot complete the payment itself: the 2C2P page and the 303 redirect from the return endpoint need a real browser.
 
 ## 2C2P credentials
 
 Use the 2C2P sandbox merchant ID, secret key and the Singapore test cards from the 2C2P sandbox page.
+
+**`dotnet run`:** copy the template and fill in the two values.
+
+```sh
+cd backend/PaymentIntegration.Api
+cp appsettings.Development.example.json appsettings.Development.json
+```
+
+```json
+{
+  "TwoC2P": {
+    "MerchantId": "<your-2c2p-merchant-id>",
+    "SecretKey": "<your-2c2p-merchant-secret>"
+  }
+}
+```
+
+**Docker:** copy `.env.example` to `.env` and set `TWOC2P_MERCHANT_ID` and `TWOC2P_SECRET_KEY`. Compose passes them to the API as `TwoC2P__MerchantId` and `TwoC2P__SecretKey`. Any setting can also be overridden with an environment variable of that form, or with `dotnet user-secrets`.
+
+| Setting | Where | Default |
+| --- | --- | --- |
+| `TwoC2P:MerchantId`, `TwoC2P:SecretKey` | git-ignored `appsettings.Development.json` or `.env` | none (required for a checkout) |
+| `TwoC2P:BaseUrl` | `appsettings.json` | `https://sandbox-pgw.2c2p.com/payment/4.3/` |
+| `TwoC2P:FrontendReturnUrl` | `appsettings.json` | `http://localhost:5263/api/payments/2c2p/return/{invoiceNo}` |
+| `TwoC2P:BackendReturnUrl` | `appsettings.json` or `.env` | `http://localhost:5263/api/payments/2c2p/notification` |
+| `Frontend:PaymentResultUrl` | `appsettings.json` | `http://localhost:3000/payment/result` |
 
 - **Merchant ID and secret key** are secrets. They go only in the git-ignored `backend/PaymentIntegration.Api/appsettings.Development.json`, or in the git-ignored `.env` for Docker. They are never committed.
 - **`TwoC2P:BaseUrl`** (in the committed `appsettings.json`) includes the API version: `https://sandbox-pgw.2c2p.com/payment/4.3/`. Changing the version is a config change.
@@ -80,12 +122,28 @@ Errors are problem-details responses: 400 for invalid input or a missing `Idempo
 ## Project structure
 
 ```
+docker-compose.yml                    MySQL, Redis and the API (reads secrets from .env).
 backend/
-  PaymentIntegration.Domain/          Entities and enums. No dependencies.
-  PaymentIntegration.Application/     Use cases (Services/), ports (Interfaces/), DTOs, exceptions, cache keys.
-  PaymentIntegration.Infrastructure/  EF Core + MySQL, repositories, Redis cache and lock, the 2C2P gateway.
-  PaymentIntegration.Api/             Controllers, exception mapping, startup.
-  PaymentIntegration.Tests/           Unit tests (JWT, gateway) and integration tests (Testcontainers).
+  PaymentIntegration.slnx
+  PaymentIntegration.Domain/          No dependencies.
+    Entities/                         Customer, CustomerCard, Product, Transaction (status changes only via MarkSucceeded/MarkFailed).
+    Enums/                            PaymentType, TransactionStatus.
+  PaymentIntegration.Application/     Use cases and ports. Knows nothing about 2C2P, MySQL or Redis.
+    Services/                         CheckoutService (idempotent checkout), PaymentNotificationService,
+                                      PaymentResultService (applies any result: notification, inquiry or return),
+                                      TransactionService, and the cached reads CustomerService and ProductService.
+    Interfaces/                       Repositories, IPaymentGateway, ICacheService, IDistributedLockService.
+    DTOs/, DTOs/Payments/             API shapes, and the provider-neutral gateway requests and results.
+    Caching/CacheKeys.cs              Every cache key is built here.
+    Exceptions/                       NotFound (404), Validation (400), Conflict (409), BusinessRule (422), PaymentGateway (502).
+  PaymentIntegration.Infrastructure/  Implementations of the ports.
+    Persistence/                      PaymentDbContext, entity configurations, migrations, seed data.
+    Repositories/                     EF Core repositories, including the conditional "update only if Pending".
+    Redis/                            RedisCacheService (failures are a cache miss) and RedisDistributedLockService.
+    Payments/                         TwoC2PPaymentGateway, the JWT helper, request/response messages, response codes.
+    DependencyInjection.cs            Registers all of the above, including the 2C2P HttpClient (15s timeout).
+  PaymentIntegration.Api/             Controllers, ApiExceptionHandler (exceptions → problem details), Program.cs.
+  PaymentIntegration.Tests/           Unit/ (JWT, gateway) and Integration/ (Testcontainers MySQL + Redis).
 frontend/                             Next.js checkout page and result page (calls the API through its /api proxy).
 ```
 
@@ -95,7 +153,7 @@ Dependencies point inwards: Api → Application + Infrastructure, Infrastructure
 
 **One-time product.** Checkout creates a Pending transaction, asks 2C2P for a Payment Token and returns the 2C2P payment page URL. The customer pays there. 2C2P then posts the result to the notification endpoint, which verifies its signature and finalises the transaction.
 
-**Recurring product.** The same, but the Payment Token request is card-only with `tokenize: true`. The successful result carries a `customerToken`, and the notification handler saves it as a card for the customer.
+**Recurring product.** The same, but the Payment Token request is card-only with `tokenize: true`. The successful result carries a `customerToken`, which is saved as a card for the customer. Whichever result finalises the payment saves it: the notification, or the Payment Inquiry run on the browser return. Both go through `PaymentResultService`, so the rules live in one place.
 
 **Saved card.** Checkout charges the card directly: Payment Token (with `customerToken` and `request3DS: "N"`), then Do Payment.
 - Code `2000`: the charge finished. Payment Inquiry runs at once and the response is final, with no redirect URL.
@@ -130,26 +188,27 @@ Do Payment is never retried (there is no retry handler on the 2C2P HttpClient), 
 
 ### Caching
 
-Cache-aside in Redis for the customer list, the product list (10 minutes each) and each customer's saved cards (`customer:{id}:cards`, 5 minutes). A cache failure is logged and treated as a miss, so reads fall back to MySQL. When the notification handler saves a card, it writes MySQL first and then deletes `customer:{id}:cards`, so the next read loads the new card. The card is saved even when the status update changed nothing, so a repeated notification can still save a card whose first save failed, but only for a transaction that is stored as Succeeded.
+Cache-aside in Redis for the customer list, the product list (10 minutes each) and each customer's saved cards (`customer:{id}:cards`, 5 minutes). These are read on every checkout page load and rarely change, so they are the reads worth caching. A cache failure is logged and treated as a miss, so reads fall back to MySQL: Redis makes the app faster but is never required for it to be correct. The TTL bounds how stale an entry can get if an invalidation is ever missed. When a successful result saves a card (through `CustomerService.SaveCardAsync`), it writes MySQL first and then deletes `customer:{id}:cards`, so the next read loads the new card. The card is saved even when the status update changed nothing, so a repeated notification can still save a card whose first save failed, but only for a transaction that is stored as Succeeded.
 
 Transaction status is never cached: it changes whenever the notification arrives, and the result page must show the current value.
 
 ## Seed data
 
-There are no endpoints for creating customers or products, so the first migration inserts these rows with fixed IDs.
+There are no endpoints for creating customers or products, so the migrations insert these rows with fixed IDs (`SeedData.cs`; the `RenameSeedData` migration changed the original rows in place, so existing databases keep their transactions and saved cards).
 
 | ID | Customer | Email |
 | --- | --- | --- |
-| 1 | Alice Tan | alice.tan@example.com |
-| 2 | Ben Lim | ben.lim@example.com |
-| 3 | Chloe Ng | chloe.ng@example.com |
+| 1 | Lisa La | lisa.la@example.com |
+| 2 | Rose Park | rose.park@example.com |
+| 3 | Jennie Kim | jennie.kim@example.com |
+| 4 | Jisoo Kim | jisoo.kim@example.com |
 
 | ID | Product | Price | Payment type |
 | --- | --- | --- | --- |
-| 1 | Wireless Mouse | SGD 29.90 | OneTime |
-| 2 | Mechanical Keyboard | SGD 149.00 | OneTime |
-| 3 | Cloud Storage Plan | SGD 9.99 | Recurring (saves the card) |
-| 4 | Music Streaming Membership | SGD 12.98 | Recurring (saves the card) |
+| 1 | Bangkok Tour Ticket | SGD 188.00 | OneTime |
+| 2 | Square One Album | SGD 29.90 | OneTime |
+| 3 | Monthly Live Show | SGD 9.99 | Recurring (saves the card) |
+| 4 | Yearly Photocard | SGD 99.00 | Recurring (saves the card) |
 
 ## Database changes
 

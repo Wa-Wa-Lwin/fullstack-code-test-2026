@@ -11,7 +11,7 @@ public class TwoC2PJwtTests
     private const string SecretKey = "0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF";
 
     private const string PaymentTokenPayload =
-        """{"merchantID":"JT01","invoiceNo":"INV0001","description":"Cloud Storage Plan","amount":9.99,"currencyCode":"SGD","paymentChannel":["CC"],"tokenize":true}""";
+        """{"merchantID":"JT01","invoiceNo":"INV0001","description":"Monthly Live Show","amount":9.99,"currencyCode":"SGD","paymentChannel":["CC"],"tokenize":true}""";
 
     private readonly TwoC2PJwt _jwt = new(SecretKey);
 

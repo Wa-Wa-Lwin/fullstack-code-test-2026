@@ -16,7 +16,7 @@ namespace PaymentIntegration.Tests.Integration;
 [Collection(ApiCollection.Name)]
 public class PaymentNotificationTests(ApiFixture fixture)
 {
-    // Cloud Storage Plan, SGD 9.99, Recurring.
+    // Monthly Live Show, SGD 9.99, Recurring.
     private const int ProductId = 3;
     private const decimal Price = 9.99m;
 

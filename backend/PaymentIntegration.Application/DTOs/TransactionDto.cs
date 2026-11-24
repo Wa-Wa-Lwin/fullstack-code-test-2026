@@ -14,7 +14,7 @@ public class TransactionDto
     /// <example>3</example>
     public int ProductId { get; set; }
 
-    /// <example>Cloud Storage Plan</example>
+    /// <example>Monthly Live Show</example>
     public string ProductName { get; set; } = string.Empty;
 
     /// <example>INV20261124120000AB12CD</example>
