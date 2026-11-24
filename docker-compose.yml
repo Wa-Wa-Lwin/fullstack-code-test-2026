@@ -7,7 +7,7 @@ services:
       MYSQL_ROOT_PASSWORD: dev_root_password
       MYSQL_DATABASE: payment_db
       MYSQL_USER: payment_user
-      MYSQL_PASSWORD: dev_payment_password
+      MYSQL_PASSWORD: "1234"
     ports:
       - "3307:3306"
     volumes:
@@ -44,7 +44,7 @@ services:
       # Development runs the startup migrations and serves Swagger at /swagger.
       ASPNETCORE_ENVIRONMENT: Development
       # Inside Compose the services reach each other by name on their container ports.
-      ConnectionStrings__PaymentDb: "Server=mysql;Port=3306;Database=payment_db;User=payment_user;Password=dev_payment_password"
+      ConnectionStrings__PaymentDb: "Server=mysql;Port=3306;Database=payment_db;User=payment_user;Password=1234"
       ConnectionStrings__Redis: "redis:6379"
       # Secrets come from .env (git-ignored); see .env.example.
       TwoC2P__MerchantId: ${TWOC2P_MERCHANT_ID:-}
