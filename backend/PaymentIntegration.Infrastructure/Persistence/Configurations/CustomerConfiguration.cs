@@ -29,5 +29,7 @@ internal sealed class CustomerConfiguration : IEntityTypeConfiguration<Customer>
 
         // The Customer -> Cards relationship is configured in CustomerCardConfiguration,
         // next to the foreign key it uses.
+
+        builder.HasData(SeedData.Customers);
     }
 }

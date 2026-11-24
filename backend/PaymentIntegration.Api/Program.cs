@@ -1,4 +1,10 @@
+using Microsoft.EntityFrameworkCore;
+using PaymentIntegration.Infrastructure;
+using PaymentIntegration.Infrastructure.Persistence;
+
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddInfrastructure(builder.Configuration);
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
@@ -9,6 +15,16 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+
+// Creates the tables and seed rows on first run, so `docker compose up -d` followed by
+// `dotnet run` is enough. In production, migrations run as a separate deployment step
+// instead, so several app instances never migrate at the same time.
+if (app.Environment.IsDevelopment())
+{
+    await using var scope = app.Services.CreateAsyncScope();
+    var db = scope.ServiceProvider.GetRequiredService<PaymentDbContext>();
+    await db.Database.MigrateAsync(app.Lifetime.ApplicationStopping);
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

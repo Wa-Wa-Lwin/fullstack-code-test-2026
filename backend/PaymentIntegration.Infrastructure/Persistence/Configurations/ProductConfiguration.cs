@@ -38,5 +38,7 @@ internal sealed class ProductConfiguration : IEntityTypeConfiguration<Product>
             .HasConversion<string>()
             .HasMaxLength(20)
             .IsRequired();
+
+        builder.HasData(SeedData.Products);
     }
 }
