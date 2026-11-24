@@ -4,6 +4,10 @@ public class PaymentResult
 {
     public PaymentOutcome Outcome { get; set; }
 
+    /// <summary>The invoice the result belongs to. A notification is matched to its transaction by it.</summary>
+    public string? InvoiceNo { get; set; }
+
+    /// <summary>The provider's response code, stored as is. Only the gateway interprets it.</summary>
     public string? RawCode { get; set; }
 
     public string? Description { get; set; }
