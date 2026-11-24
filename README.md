@@ -14,6 +14,15 @@ dotnet run --project PaymentIntegration.Api     # http://localhost:5263, Swagger
 
 In Development, the API applies any pending EF Core migrations when it starts, so the first run creates the tables and the seed data below. In production, migrations would run as a separate deployment step instead, so that several app instances never migrate the same database at once.
 
+### 2C2P settings
+
+The `TwoC2P` settings are split in two. The merchant ID and secret key go only in the gitignored `appsettings.Development.json`. The committed `appsettings.json` holds the rest:
+
+- `BaseUrl` includes the PGW API version (`https://sandbox-pgw.2c2p.com/payment/4.3/`), so moving to another version is a config change.
+- `BackendReturnUrl` is where 2C2P posts the payment notification. 2C2P cannot reach `localhost`, so to receive notifications locally, expose the API through a tunnel (for example ngrok) and override this URL in `appsettings.Development.json`.
+
+The settings are checked the first time a payment is made, not at startup, so the customer and product endpoints work without them.
+
 To add a migration after changing the model:
 
 ```sh
